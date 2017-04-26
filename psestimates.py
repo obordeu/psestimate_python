@@ -12,16 +12,16 @@ def getData(path):
 	return data
 
 # Main algorithm
-def PSestimate(data,Xb,Kb,treat,tol):
+def PSestimate(data,Xb,Kb,treatvar,tol):
 	while len(Xb)>0:
 		#Calculate first log-likelihood
 		if len(Kb)==0: L1=-1000
-		else: L1=sm.Logit(data[treat],sm.add_constant(data[Kb])).fit(disp=0).llf
+		else: L1=sm.Logit(data[treatvar],sm.add_constant(data[Kb])).fit(disp=0).llf
 		maxLike=0
 		maxVar=''
 		for x in range(0,len(Xb)):
 			# Compute second log-likelihood
-			L2=sm.Logit(data[treat],sm.add_constant(data[Kb+Xb[x:x+1]])).fit(disp=0).llf
+			L2=sm.Logit(data[treatvar],sm.add_constant(data[Kb+Xb[x:x+1]])).fit(disp=0).llf
 			#print aux.summary()
 			#Likelihood-ratio test
 			D=2*(L2-L1)
@@ -53,29 +53,28 @@ def genQuad(Kb,data):
 				data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
 	return (Xq,data)
 
-def main(data):
+def main(data,treatvar):
 	data = getData(data)
 	print type(data)
 	Xb = list(data.dtype.names)
-	treat=Xb[0]
 	#define Kb
 	Kb=[]
 	Kl=[]
-	del Xb[0] #always the treatment has to be first
+	del Xb[Xb.index(treatvar)]
 	#PRIMER ORDER
 	Xb=list(set(Xb)-set(Kb))
 	tol=1
-	Kb=PSestimate(data,Xb,Kb,treat,tol)
+	Kb=PSestimate(data,Xb,Kb,treatvar,tol)
 	print "First order variables chosen: ", Kb
 	#SEGUNDO ORDEN
 	(Xq,data)=genQuad(Kb,data)
 	tol=2.71
 	print Kb
-	Kb=PSestimate(data,Xq,Kb,treat,tol)
+	Kb=PSestimate(data,Xq,Kb,treatvar,tol)
 	print "Total variables selected: ", Kb
 
 if __name__ == '__main__':
 	print str(datetime.now())
 	t1=time.time()
-	main(data='nswre.txt')
+	main(data='nswre.txt', treatvar='treat')
 	print "The run time was ", (time.time()-t1), " seconds."
