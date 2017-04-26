@@ -3,6 +3,8 @@ import time
 from datetime import datetime
 import itertools
 import numpy as np
+from numpy.lib import recfunctions as rfn
+
 import statsmodels.api as sm
 
 def getData(path):
@@ -33,6 +35,14 @@ def PSestimates(data,Xb,Kb,treat,tol):
 		else: break
 	return Kb
 
+def genQuad(Kb,data):
+	Xq=[]
+	for x in range(1,len(Kb)):
+		for y in range(0,x+1):
+			Xq.append(str(Kb[x]+'#'+Kb[y]))
+			NewVar=data[Kb[x]]*data[Kb[y]]
+			data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
+	return (Xq,data)
 
 def main():
 	data=getData('nswre.txt')
@@ -43,14 +53,15 @@ def main():
 	Kb=[]
 	Kl=[]
 	del Xb[0] #always the treatment has to be first
+	#PRIMER ORDER
 	Xb=list(set(Xb)-set(Kb))
 	tol=1
 	Kb=PSestimates(data,Xb,Kb,treat,tol)
-	print Kb
-	Xq=list(itertools.product(Kb, Kb))
-
-	print Xq
-
+	print "First order variables chosen: ", Kb
+	#SEGUNDO ORDEN
+	(Xq,data)=genQuad(Kb,data)
+	Kbq=PSestimates(data,Xq,Kb,treat,tol)
+	#print "Second order variables chosen: ", list(set(Kbq)-set(Kb))
 
 
 
