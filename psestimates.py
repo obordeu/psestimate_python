@@ -12,7 +12,7 @@ def getData(path):
 	return data
 
 # Main algorithm
-def PSestimate(data,Xb,Kb,treatvar,tol):
+def main(data,Xb,Kb,treatvar,tol):
 	while len(Xb)>0:
 		#Calculate first log-likelihood
 		if len(Kb)==0: L1=-1000
@@ -53,7 +53,7 @@ def genQuad(Kb,data):
 				data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
 	return (Xq,data)
 
-def main(data,treatvar):
+def PSestimate(data,treatvar):
 	data = getData(data)
 	print type(data)
 	Xb = list(data.dtype.names)
@@ -64,17 +64,17 @@ def main(data,treatvar):
 	#PRIMER ORDER
 	Xb=list(set(Xb)-set(Kb))
 	tol=1
-	Kb=PSestimate(data,Xb,Kb,treatvar,tol)
+	Kb=main(data,Xb,Kb,treatvar,tol)
 	print "First order variables chosen: ", Kb
 	#SEGUNDO ORDEN
 	(Xq,data)=genQuad(Kb,data)
 	tol=2.71
 	print Kb
-	Kb=PSestimate(data,Xq,Kb,treatvar,tol)
+	Kb=main(data,Xq,Kb,treatvar,tol)
 	print "Total variables selected: ", Kb
 
 if __name__ == '__main__':
 	print str(datetime.now())
 	t1=time.time()
-	main(data='nswre.txt', treatvar='treat')
-	print "The run time was ", (time.time()-t1), " seconds."
+	PSestimate(data='nswre.txt', treatvar='treat')
+	print "Run time was", (time.time()-t1), "seconds."
