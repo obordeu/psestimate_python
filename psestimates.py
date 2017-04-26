@@ -39,9 +39,18 @@ def genQuad(Kb,data):
 	Xq=[]
 	for x in range(1,len(Kb)):
 		for y in range(0,x+1):
-			Xq.append(str(Kb[x]+'#'+Kb[y]))
-			NewVar=data[Kb[x]]*data[Kb[y]]
-			data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
+			if x==y:
+				aux=set(data[Kb[x]])
+				if len(aux)==2 and 0 in aux and 1 in aux:
+					print Kb[x]," is a dummy"
+				else:
+					Xq.append(str(Kb[x]+'#'+Kb[y]))
+					NewVar=data[Kb[x]]*data[Kb[y]]
+					data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
+			else:
+				Xq.append(str(Kb[x]+'#'+Kb[y]))
+				NewVar=data[Kb[x]]*data[Kb[y]]
+				data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
 	return (Xq,data)
 
 def main():
@@ -60,8 +69,10 @@ def main():
 	print "First order variables chosen: ", Kb
 	#SEGUNDO ORDEN
 	(Xq,data)=genQuad(Kb,data)
-	Kbq=PSestimates(data,Xq,Kb,treat,tol)
-	#print "Second order variables chosen: ", list(set(Kbq)-set(Kb))
+	tol=2.71
+	print Kb
+	Kb=PSestimates(data,Xq,Kb,treat,tol)
+	print "Total variables selected: ", Kb
 
 
 
