@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-import time
-from datetime import datetime
-import itertools
 import numpy as np
+import statsmodels.api as sm
+import time
+import itertools
+from datetime import datetime
 from numpy.lib import recfunctions as rfn
 
-import statsmodels.api as sm
-
+# Input data
 def getData(path):
-	data=np.genfromtxt(path,names=True,delimiter=',')
+	data=np.genfromtxt(path, names=True, delimiter=',')
 	return data
 
-
-def PSestimates(data,Xb,Kb,treat,tol):
+# Main algorithm
+def PSestimate(data,Xb,Kb,treat,tol):
 	while len(Xb)>0:
 		#Calculate first log-likelihood
 		if len(Kb)==0: L1=-1000
@@ -20,7 +20,7 @@ def PSestimates(data,Xb,Kb,treat,tol):
 		maxLike=0
 		maxVar=''
 		for x in range(0,len(Xb)):
-			#Calculate seconf log-likelihood
+			# Compute second log-likelihood
 			L2=sm.Logit(data[treat],sm.add_constant(data[Kb+Xb[x:x+1]])).fit(disp=0).llf
 			#print aux.summary()
 			#Likelihood-ratio test
@@ -53,10 +53,10 @@ def genQuad(Kb,data):
 				data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
 	return (Xq,data)
 
-def main():
-	data=getData('nswre.txt')
+def main(data):
+	data = getData(data)
 	print type(data)
-	Xb=list( data.dtype.names)
+	Xb = list(data.dtype.names)
 	treat=Xb[0]
 	#define Kb
 	Kb=[]
@@ -65,19 +65,17 @@ def main():
 	#PRIMER ORDER
 	Xb=list(set(Xb)-set(Kb))
 	tol=1
-	Kb=PSestimates(data,Xb,Kb,treat,tol)
+	Kb=PSestimate(data,Xb,Kb,treat,tol)
 	print "First order variables chosen: ", Kb
 	#SEGUNDO ORDEN
 	(Xq,data)=genQuad(Kb,data)
 	tol=2.71
 	print Kb
-	Kb=PSestimates(data,Xq,Kb,treat,tol)
+	Kb=PSestimate(data,Xq,Kb,treat,tol)
 	print "Total variables selected: ", Kb
-
-
 
 if __name__ == '__main__':
 	print str(datetime.now())
 	t1=time.time()
-	main()
+	main(data='nswre.txt')
 	print "The run time was ", (time.time()-t1), " seconds."
