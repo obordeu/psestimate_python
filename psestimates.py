@@ -53,7 +53,7 @@ def genQuad(Kb,data):
 				data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
 	return (Xq,data)
 
-def PSestimate(data,treatvar,totry=None):
+def PSestimate(data,treatvar,totry=None,clin=1,cquad=2.71):
 	data = getData(data)
 	print type(data)
 	if totry is None:
@@ -68,12 +68,12 @@ def PSestimate(data,treatvar,totry=None):
 
 	#PRIMER ORDER
 	Xb=list(set(Xb)-set(Kb))
-	tol=1
+	tol=clin
 	Kb=main(data,Xb,Kb,treatvar,tol)
 	print "First order variables chosen: ", Kb
 	#SEGUNDO ORDEN
 	(Xq,data)=genQuad(Kb,data)
-	tol=2.71
+	tol=cquad
 	print Kb
 	Kb=main(data,Xq,Kb,treatvar,tol)
 	print "Total variables selected: ", Kb
