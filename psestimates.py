@@ -8,13 +8,13 @@ from numpy.lib import recfunctions as rfn
 
 # Input data
 def getData(path):
-	data=np.genfromtxt(path, names=True, delimiter=',')
+	data = np.genfromtxt(path, names = True, delimiter=',')
 	return data
 
 # Main algorithm
 def main(data,Xb,Kb,treatvar,tol):
 	while len(Xb)>0:
-		#Calculate first log-likelihood
+		# Compute first log-likelihood
 		if len(Kb)==0: L1=-1000
 		else: L1=sm.Logit(data[treatvar],sm.add_constant(data[Kb])).fit(disp=0).llf
 		maxLike=0
@@ -53,14 +53,19 @@ def genQuad(Kb,data):
 				data=rfn.append_fields(data,names=str(Kb[x]+'#'+Kb[y]),data=NewVar,usemask=False)
 	return (Xq,data)
 
-def PSestimate(data,treatvar):
+def PSestimate(data,treatvar,totry=None):
 	data = getData(data)
 	print type(data)
-	Xb = list(data.dtype.names)
+	if totry is None:
+		Xb = list(data.dtype.names)
+		del Xb[Xb.index(treatvar)]
+	else:
+		Xb = list(totry)
+
 	#define Kb
 	Kb=[]
 	Kl=[]
-	del Xb[Xb.index(treatvar)]
+
 	#PRIMER ORDER
 	Xb=list(set(Xb)-set(Kb))
 	tol=1
@@ -76,5 +81,5 @@ def PSestimate(data,treatvar):
 if __name__ == '__main__':
 	print str(datetime.now())
 	t1=time.time()
-	PSestimate(data='nswre.txt', treatvar='treat')
+	PSestimate(data='nswre.txt', treatvar='treat', totry=['black', 'ed', 'nodeg', 're74'])
 	print "Run time was", (time.time()-t1), "seconds."
