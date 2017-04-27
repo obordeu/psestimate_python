@@ -54,29 +54,30 @@ def genQuad(Kb,data):
 	return (Xq,data)
 
 def PSestimate(data,treatvar,totry=None,clin=1,cquad=2.71):
+	# Get data:
 	data = getData(data)
-	print type(data)
+	# Define list of covariates to try (default is all):
 	if totry is None:
 		Xb = list(data.dtype.names)
 		del Xb[Xb.index(treatvar)]
 	else:
 		Xb = list(totry)
+	# Define Kb
+	Kb = []
+	Kl = []
 
-	#define Kb
-	Kb=[]
-	Kl=[]
-
-	#PRIMER ORDER
+	# First order terms:
 	Xb=list(set(Xb)-set(Kb))
 	tol=clin
 	Kb=main(data,Xb,Kb,treatvar,tol)
 	print "First order variables chosen: ", Kb
-	#SEGUNDO ORDEN
+
+	# Second order terms:
 	(Xq,data)=genQuad(Kb,data)
 	tol=cquad
-	print Kb
 	Kb=main(data,Xq,Kb,treatvar,tol)
-	print "Total variables selected: ", Kb
+	print "All covariates chosen: ", Kb
+
 
 if __name__ == '__main__':
 	print str(datetime.now())
